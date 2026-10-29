@@ -42,3 +42,21 @@ terraform.rc
 # Optional: ignore plan files saved before destroying Terraform configuration
 # Uncomment the line below if you want to ignore planout files.
 # planout
+# Terraform saved plans
+*.tfplan
+*.tfplan.*
+*.tfplan.json
+
+# Terraform plan review files
+cmp001-review.txt
+cmp001-fresh-review.txt
+
+# Python-generated files
+__pycache__/
+*.pyc
+
+# Environment secrets
+.env
+.env.*
+*.pem
+*.key

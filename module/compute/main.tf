@@ -5,9 +5,9 @@ resource "aws_launch_template" "this" {
   name_prefix   = "${var.project_name}-${var.environment}-lt-"
   image_id      = var.ami_id
   instance_type = var.instance_type
-user_data = base64encode(templatefile("${path.module}/userdata.sh", {
-  app_code = file("${path.module}/app.py")
-}))
+  user_data = base64encode(templatefile("${path.module}/userdata.sh", {
+    app_code = file("${path.module}/app.py")
+  }))
   iam_instance_profile {
     name = var.iam_instance_profile_name
   }
