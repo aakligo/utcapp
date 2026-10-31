@@ -33,13 +33,18 @@ variable "enable_alb" {
   default     = false
 }
 
-
-# ==========================================
-# DB-001: RDS Deployment Control
-# ==========================================
-
 variable "enable_rds" {
   description = "Whether to deploy the RDS PostgreSQL database"
+  type        = bool
+  default     = false
+}
+variable "enable_s3" {
+  description = "Whether to deploy the UTC application S3 bucket"
+  type        = bool
+  default     = false
+}
+variable "enable_efs" {
+  description = "Whether to deploy the EFS shared filesystem"
   type        = bool
   default     = false
 }

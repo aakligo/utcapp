@@ -112,4 +112,22 @@ module "database" {
   db_username       = "utcadmin"
   db_instance_class = "db.t3.micro"
   allocated_storage = 20
+} # ==========================================
+# STO-001: S3 and EFS Storage
+# ==========================================
+
+module "storage" {
+  source = "../../module/storage"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  enable_s3  = var.enable_s3
+  enable_efs = var.enable_efs
+
+  s3_bucket_name = "${var.project_name}-${var.environment}-student-documents"
+
+  vpc_id                = module.network.vpc_id
+  private_subnet_ids    = module.network.app_subnet_ids
+  app_security_group_id = module.security_groups.app_security_group_id
 }
