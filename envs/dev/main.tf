@@ -131,3 +131,16 @@ module "storage" {
   private_subnet_ids    = module.network.app_subnet_ids
   app_security_group_id = module.security_groups.app_security_group_id
 }
+
+# SEC-002: Secrets Management
+module "secrets" {
+  source = "../../module/secrets"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  ec2_role_name = module.iam.ec2_role_name
+
+  # No secrets approved by the application team yet
+  approved_secret_arns = []
+}
