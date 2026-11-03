@@ -144,3 +144,22 @@ module "secrets" {
   # No secrets approved by the application team yet
   approved_secret_arns = []
 }
+
+# OBS-001: CloudWatch Monitoring and SNS
+module "monitoring" {
+  source = "../../module/monitoring"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Keep monitoring disabled until deployment approval
+  enable_monitoring = false
+
+  # Reuse the existing EC2 Auto Scaling Group
+  autoscaling_group_name = module.compute.autoscaling_group_name
+
+  # Monitoring settings
+  cpu_threshold      = 80
+  log_retention_days = 7
+  notification_email = ""
+}
