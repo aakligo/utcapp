@@ -85,9 +85,12 @@ module "compute" {
   app_security_group_id = module.security_groups.app_security_group_id
 
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
+  # DB-001: RDS PostgreSQL secret
+  db_secret_arn = var.enable_rds ? module.database[0].db_master_secret_arn : ""
 
+  db_host          = var.enable_rds ? split(":", module.database[0].db_endpoint)[0] : ""
   min_size         = 0
-  desired_capacity = 0
+  desired_capacity = 1
   max_size         = 3
 
 
@@ -142,9 +145,8 @@ module "secrets" {
   ec2_role_name = module.iam.ec2_role_name
 
   # No secrets approved by the application team yet
-  approved_secret_arns = []
+  approved_secret_arns = var.enable_rds ? [module.database[0].db_master_secret_arn] : []
 }
-
 # OBS-001: CloudWatch Monitoring and SNS
 module "monitoring" {
   source = "../../module/monitoring"
@@ -153,7 +155,7 @@ module "monitoring" {
   environment  = var.environment
 
   # Keep monitoring disabled until deployment approval
-  enable_monitoring = false
+  enable_monitoring = true
 
   # Reuse the existing EC2 Auto Scaling Group
   autoscaling_group_name = module.compute.autoscaling_group_name
@@ -161,5 +163,36 @@ module "monitoring" {
   # Monitoring settings
   cpu_threshold      = 80
   log_retention_days = 7
-  notification_email = ""
+  notification_email = "akligoatsu83@gmail.com"
+}
+module "vpc_endpoints" {
+  source = "../../module/vpc-endpoints"
+
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
+  enable_cloudwatch_logs_endpoint = true
+  enable_secretsmanager_endpoint  = true
+  vpc_id                          = module.network.vpc_id
+
+  private_subnet_ids = [
+    module.network.app_subnet_ids[0]
+  ]
+  app_security_group_id = module.security_groups.app_security_group_id
+  app_route_table_id    = module.network.app_route_table_id
+}
+
+# Allow application EC2 instances to access SSM VPC endpoints
+resource "aws_vpc_security_group_egress_rule" "app_to_ssm_endpoints" {
+  security_group_id = module.security_groups.app_security_group_id
+
+  referenced_security_group_id = module.vpc_endpoints.endpoint_security_group_id
+
+  from_port   = 443
+  to_port     = 443
+  ip_protocol = "tcp"
+
+  description = "Allow HTTPS traffic to SSM VPC endpoints"
+
 }

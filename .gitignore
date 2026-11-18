@@ -60,3 +60,9 @@ __pycache__/
 .env.*
 *.pem
 *.key
+
+# Generated Terraform review reports
+/envs/dev/*.txt
+
+# Local infrastructure state snapshots
+/envs/dev/current-state-snapshot.json

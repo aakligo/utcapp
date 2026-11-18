@@ -62,3 +62,15 @@ variable "target_group_arns" {
   type        = list(string)
   default     = []
 }
+# DB-001: AWS Secrets Manager integration
+variable "db_secret_arn" {
+  description = "ARN of the RDS-managed PostgreSQL secret"
+  type        = string
+  default     = ""
+}
+# DB-001: PostgreSQL database hostname
+variable "db_host" {
+  description = "Private RDS PostgreSQL hostname"
+  type        = string
+  default     = ""
+}

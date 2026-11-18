@@ -1,8 +1,3 @@
-# This locals block creates reusable values inside the module.
-# Terraform automatically calculates subnet names, CIDR blocks,
-# Availability Zones, and subnet types.
-# This helps us avoid writing nine separate aws_subnet resources.
-# It makes our Terraform code cleaner, shorter, and easier to maintain.
 
 locals {
   name_prefix = "${var.project_name}-${var.environment}"

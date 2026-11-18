@@ -59,11 +59,6 @@ resource "aws_vpc_security_group_egress_rule" "alb_to_app" {
 
   description = "Allow traffic from ALB to application"
 }
-
-# ==========================================
-# 2. APPLICATION SECURITY GROUP
-# ==========================================
-
 resource "aws_security_group" "app" {
   name        = "${local.name_prefix}-app-sg"
   description = "Security group for application servers"
@@ -87,8 +82,6 @@ resource "aws_vpc_security_group_ingress_rule" "app_from_alb" {
 
   description = "Allow application traffic from ALB only"
 }
-
-# Allow application to connect to PostgreSQL
 resource "aws_vpc_security_group_egress_rule" "app_to_rds" {
   security_group_id = aws_security_group.app.id
 
@@ -99,6 +92,8 @@ resource "aws_vpc_security_group_egress_rule" "app_to_rds" {
 
   description = "Allow PostgreSQL traffic to RDS"
 }
+
+
 
 # ==========================================
 # 3. RDS SECURITY GROUP
@@ -126,4 +121,16 @@ resource "aws_vpc_security_group_ingress_rule" "rds_from_app" {
   ip_protocol                  = "tcp"
 
   description = "Allow PostgreSQL from application only"
+}
+# OBS-001: Allow private application servers to access S3
+# through the S3 Gateway VPC Endpoint
+resource "aws_vpc_security_group_egress_rule" "app_to_s3" {
+  security_group_id = aws_security_group.app.id
+
+  prefix_list_id = "pl-63a5400a"
+  from_port      = 443
+  to_port        = 443
+  ip_protocol    = "tcp"
+
+  description = "Allow HTTPS to Amazon S3 via Gateway endpoint"
 }

@@ -39,3 +39,7 @@ output "availability_zones" {
   description = "Selected Availability Zones"
   value       = local.availability_zones
 }
+output "app_route_table_id" {
+  description = "Route table ID for private application subnets"
+  value       = aws_route_table.app.id
+}
