@@ -87,7 +87,7 @@ module "compute" {
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   s3_bucket_name            = var.enable_s3 ? module.storage.s3_bucket_name : ""
   # DB-001: RDS PostgreSQL secret
-  db_secret_arn = var.enable_rds ? module.database[0].db_master_secret_arn : ""
+  db_secret_arn = var.enable_rds ? data.aws_secretsmanager_secret.db_app.arn : ""
 
   db_host          = var.enable_rds ? split(":", module.database[0].db_endpoint)[0] : ""
   min_size         = 0
@@ -145,8 +145,8 @@ module "secrets" {
 
   ec2_role_name = module.iam.ec2_role_name
 
-  # No secrets approved by the application team yet
-  approved_secret_arns = var.enable_rds ? [module.database[0].db_master_secret_arn] : []
+  # SEC-002: Approved application database secret
+  approved_secret_arns = var.enable_rds ? [data.aws_secretsmanager_secret.db_app.arn] : []
 }
 # OBS-001: CloudWatch Monitoring and SNS
 module "monitoring" {
