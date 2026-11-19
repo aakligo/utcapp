@@ -74,3 +74,8 @@ variable "db_host" {
   type        = string
   default     = ""
 }
+variable "s3_bucket_name" {
+  description = "S3 bucket used by the UTC application"
+  type        = string
+  default     = ""
+}

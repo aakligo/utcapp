@@ -143,3 +143,33 @@ resource "aws_efs_mount_target" "this" {
   subnet_id       = var.private_subnet_ids[count.index]
   security_groups = [aws_security_group.efs[0].id]
 }
+# STO-001: Deny unencrypted HTTP requests to S3
+resource "aws_s3_bucket_policy" "https_only" {
+  count = var.enable_s3 ? 1 : 0
+
+  bucket = aws_s3_bucket.this[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+
+        Resource = [
+          aws_s3_bucket.this[0].arn,
+          "${aws_s3_bucket.this[0].arn}/*"
+        ]
+
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      }
+    ]
+  })
+}

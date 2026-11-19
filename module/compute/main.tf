@@ -11,6 +11,7 @@ resource "aws_launch_template" "this" {
     cloudwatch_agent_config = file("${path.module}/cloudwatch-agent.json")
     db_secret_arn           = var.db_secret_arn
     db_host                 = var.db_host
+    s3_bucket_name          = var.s3_bucket_name
   }))
 
   iam_instance_profile {

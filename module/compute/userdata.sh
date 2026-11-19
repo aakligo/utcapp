@@ -54,6 +54,7 @@ ExecStart=/usr/bin/python3 /opt/utc-app/app.py
 Environment=PYTHONUNBUFFERED=1
 Environment="UTC_DB_SECRET_ARN=${db_secret_arn}"
 Environment="UTC_DB_HOST=${db_host}"
+Environment="UTC_S3_BUCKET=${s3_bucket_name}"
 StandardOutput=append:/var/log/utc-app.log
 StandardError=append:/var/log/utc-app.log
 Restart=always

@@ -85,6 +85,7 @@ module "compute" {
   app_security_group_id = module.security_groups.app_security_group_id
 
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
+  s3_bucket_name            = var.enable_s3 ? module.storage.s3_bucket_name : ""
   # DB-001: RDS PostgreSQL secret
   db_secret_arn = var.enable_rds ? module.database[0].db_master_secret_arn : ""
 
