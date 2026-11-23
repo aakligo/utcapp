@@ -66,3 +66,14 @@ __pycache__/
 
 # Local infrastructure state snapshots
 /envs/dev/current-state-snapshot.json
+
+# Temporary SSM operational payloads
+envs/dev/obs001-config-agent.json
+envs/dev/s3-activate-ssm.json
+envs/dev/s3-app-test-ssm.json
+envs/dev/s3-smoke-ssm.json
+envs/dev/s3-stage-ssm.json
+envs/dev/sec002-create-db-user.json
+envs/dev/sec002-diagnose.json
+envs/dev/sec002-fix-db-override.json
+envs/dev/sec002-switch-service.json
