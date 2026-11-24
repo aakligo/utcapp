@@ -1,5 +1,3 @@
-
-
 resource "aws_launch_template" "this" {
 
   name_prefix   = "${var.project_name}-${var.environment}-lt-"
