@@ -31,30 +31,30 @@ dnf install -y python3-boto3 python3-psycopg2
 
 echo "Python database dependencies installed."
 
-# Install UTC Python application
-cat > /opt/utc-app/app.py <<'UTC_APP_PYTHON'
-${app_code}
-UTC_APP_PYTHON
-
-chown utcapp:utcapp /opt/utc-app/app.py
-chmod 640 /opt/utc-app/app.py
-# Download UTC Student Services homepage from private S3
-python3 - <<'UTC_HOMEPAGE_PYTHON'
+# Application artifact checksum: ${app_etag}
+# Download UTC backend and homepage from private S3
+python3 - <<'UTC_APPLICATION_FILES'
 import boto3
 
 s3 = boto3.client("s3", region_name="us-east-1")
 
-s3.download_file(
-    "${s3_bucket_name}",
-    "application/index.html",
-    "/opt/utc-app/index.html"
+artifacts = (
+    ("application/app.py", "/opt/utc-app/app.py"),
+    ("application/index.html", "/opt/utc-app/index.html"),
 )
 
-print("UTC homepage downloaded from S3")
-UTC_HOMEPAGE_PYTHON
+for key, destination in artifacts:
+    s3.download_file(
+        "${s3_bucket_name}",
+        key,
+        destination
+    )
 
-chown utcapp:utcapp /opt/utc-app/index.html
-chmod 640 /opt/utc-app/index.html
+print("UTC application files downloaded from S3")
+UTC_APPLICATION_FILES
+
+chown utcapp:utcapp /opt/utc-app/app.py /opt/utc-app/index.html
+chmod 640 /opt/utc-app/app.py /opt/utc-app/index.html
 
 # Create systemd service
 cat > /etc/systemd/system/utc-app.service <<'UTC_SYSTEMD'

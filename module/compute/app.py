@@ -49,12 +49,9 @@ class AppHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
     def do_POST(self):
 
-        # Student registration - internal testing only
+        # Public demo registration.
+        # Real student data is not accepted until authentication is implemented.
         if self.path == "/students":
-
-            if self.client_address[0] not in ("127.0.0.1", "::1"):
-                self.send_error(404, "Not Found")
-                return
 
             try:
                 length = int(self.headers.get("Content-Length", "0"))
@@ -130,6 +127,44 @@ class AppHandler(BaseHTTPRequestHandler):
                 if len(values["program"]) > 150:
                     self.send_json(400, {
                         "error": "Invalid program"
+                    })
+                    return
+
+                # Demo-only safeguards.
+                # Do not accept real student information before authentication exists.
+                values["email"] = values["email"].lower()
+
+                if not values["student_number"].startswith("TEST-"):
+                    self.send_json(400, {
+                        "error": "Demo student numbers must begin with TEST-"
+                    })
+                    return
+
+                if not values["email"].endswith("@example.com"):
+                    self.send_json(400, {
+                        "error": "Demo registrations must use @example.com"
+                    })
+                    return
+
+                if (
+                    values["first_name"].casefold() != "demo"
+                    or values["last_name"].casefold() != "student"
+                ):
+                    self.send_json(400, {
+                        "error": "Demo registration must use Demo Student"
+                    })
+                    return
+
+                allowed_programs = (
+                    "Cloud Engineering",
+                    "Data Analytics",
+                    "Cybersecurity",
+                    "Mathematics"
+                )
+
+                if values["program"] not in allowed_programs:
+                    self.send_json(400, {
+                        "error": "Invalid demo program"
                     })
                     return
 

@@ -18,11 +18,26 @@
     .highlights{position:relative;z-index:2;margin-top:-38px}.highlight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.highlight{background:white;box-shadow:var(--shadow);border:1px solid #edf1f7;border-radius:13px;padding:23px 24px;display:flex;gap:15px;align-items:center}.highlight .icon{display:grid;place-items:center;width:46px;height:46px;flex:0 0 46px;background:#edf5ff;color:#2861bf;border-radius:11px;font-size:23px}.highlight b{display:block;font-size:14px}.highlight span{font-size:12px;color:var(--slate)}
     section.content{padding-block:90px 78px}.section-top{text-align:center;margin:0 auto 34px;max-width:660px}.kicker{font-weight:800;letter-spacing:.13em;font-size:11px;color:var(--blue);text-transform:uppercase}.section-top h2{color:var(--navy);font-size:clamp(27px,3.2vw,39px);line-height:1.22;letter-spacing:-.038em;margin:10px 0 11px}.section-top p{color:var(--slate);margin:0}
     .services{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.service{background:#fff;border:1px solid var(--line);border-radius:14px;padding:27px 24px;min-height:213px;box-shadow:0 10px 35px #19365b08}.service .icon{font-size:25px;display:grid;place-items:center;background:#edf5ff;width:47px;height:47px;border-radius:11px;margin-bottom:16px}.service h3{color:var(--navy);font-size:16px;line-height:1.2;margin:0 0 8px}.service p{color:var(--slate);font-size:13px;line-height:1.65;margin:0}.coming{display:inline-block;color:#506f99;background:#edf4ff;font-size:10px;font-weight:750;border-radius:20px;padding:3px 8px;margin-top:13px}
+    .registration-section{padding:78px 0;background:#fff;border-top:1px solid var(--line)}
+    .registration-card{max-width:760px;margin:0 auto;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:30px;box-shadow:var(--shadow)}
+    .demo-note{background:#fff8e7;border:1px solid #f1dc9d;color:#725a18;padding:13px 15px;border-radius:10px;font-size:12px;margin-bottom:22px}
+    .registration-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field.full{grid-column:1/-1}
+    .field label{font-size:12px;font-weight:750;color:var(--navy)}
+    .field input,.field select{width:100%;border:1px solid #cfd8e6;background:#fff;border-radius:9px;padding:11px 12px;font:inherit;color:var(--ink)}
+    .field input[readonly]{background:#f1f4f8;color:#687991}
+    .registration-actions{display:flex;align-items:center;gap:15px;margin-top:22px;flex-wrap:wrap}
+    .registration-actions button{background:var(--blue);color:#fff;border:0;border-radius:9px;padding:12px 18px;font-weight:750;cursor:pointer}
+    .registration-actions button:disabled{opacity:.65;cursor:not-allowed}
+    .registration-result{font-size:13px;font-weight:650}
+    .registration-result.success{color:#17633b}
+    .registration-result.error{color:#a32424}
     .steps-section{background:#fff;border-block:1px solid var(--line);padding:77px 0}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;text-align:center}.step .num{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;color:#fff;background:var(--navy2);font-size:15px;font-weight:800;margin-bottom:13px}.step h3{font-size:15px;margin:0 0 5px;color:var(--navy)}.step p{font-size:13px;color:var(--slate);margin:0 auto;max-width:260px}
     .status-section{padding-block:55px 70px}.status{display:flex;justify-content:space-between;align-items:center;gap:20px;background:#eaf5f2;border:1px solid #cbe8df;border-radius:16px;padding:30px 35px}.status h2{font-size:22px;line-height:1.25;margin:0 0 6px;color:#133b39}.status p{font-size:13px;color:#426a64;margin:0}.status a{background:#fff;border:1px solid #b7dbd2;color:#184d47;border-radius:10px;padding:12px 17px;white-space:nowrap;font-size:13px;font-weight:750}.status a:hover{background:#f4fffc}
     footer{background:#091a34;color:#aebfd7;padding:37px 0}.footer{display:flex;justify-content:space-between;gap:20px;align-items:center}.footer .brand{color:white}.footer .brand small{color:#aebfd7}.footer p{font-size:12px;margin:0}.footer-note{font-size:12px;text-align:right;max-width:280px}
     @media(max-width:900px){.hero .wrap{gap:30px}.services{grid-template-columns:repeat(2,1fr)}.highlight{padding:19px 15px}.highlight-grid{gap:10px}.navlinks{gap:18px}}
-    @media(max-width:700px){.top .wrap{flex-wrap:wrap;padding-block:8px}.menu{display:block}.navlinks{display:none;position:absolute;top:76px;left:0;right:0;background:white;border-bottom:1px solid var(--line);padding:20px 23px;flex-direction:column;align-items:flex-start;gap:18px;box-shadow:0 20px 25px #0c23421c}.navlinks.open{display:flex}.hero .wrap{grid-template-columns:1fr;padding-block:70px 85px}.hero h1{font-size:42px}.preview-card{transform:none;max-width:500px}.highlights{margin-top:-28px}.highlight-grid{grid-template-columns:1fr}.highlight{padding:15px 20px}.services{grid-template-columns:1fr}.steps{grid-template-columns:1fr;gap:23px}.status{flex-direction:column;align-items:flex-start;padding:24px}.footer{flex-direction:column;align-items:flex-start}.footer-note{text-align:left}}
+    @media(max-width:700px){.registration-grid{grid-template-columns:1fr}.top .wrap{flex-wrap:wrap;padding-block:8px}.menu{display:block}.navlinks{display:none;position:absolute;top:76px;left:0;right:0;background:white;border-bottom:1px solid var(--line);padding:20px 23px;flex-direction:column;align-items:flex-start;gap:18px;box-shadow:0 20px 25px #0c23421c}.navlinks.open{display:flex}.hero .wrap{grid-template-columns:1fr;padding-block:70px 85px}.hero h1{font-size:42px}.preview-card{transform:none;max-width:500px}.highlights{margin-top:-28px}.highlight-grid{grid-template-columns:1fr}.highlight{padding:15px 20px}.services{grid-template-columns:1fr}.steps{grid-template-columns:1fr;gap:23px}.status{flex-direction:column;align-items:flex-start;padding:24px}.footer{flex-direction:column;align-items:flex-start}.footer-note{text-align:left}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
   </style>
 </head>
@@ -41,12 +56,67 @@
     <div class="highlights"><div class="wrap highlight-grid"><div class="highlight"><span class="icon" aria-hidden="true">⌂</span><div><b>One central portal</b><span>Find services in one place</span></div></div><div class="highlight"><span class="icon" aria-hidden="true">▣</span><div><b>Document access</b><span>Secure workflows planned</span></div></div><div class="highlight"><span class="icon" aria-hidden="true">✓</span><div><b>Simple request tracking</b><span>Follow requests as they progress</span></div></div></div></div>
     <section class="content" id="services"><div class="wrap"><div class="section-top"><span class="kicker">Student services</span><h2>Support for every step of your journey</h2><p>Explore the services planned for the UTC Student Services Portal.</p></div><div class="services">
       <article class="service"><span class="icon" aria-hidden="true">▤</span><h3>Documents & forms</h3><p>Upload, find, and manage important academic documents.</p><span class="coming">Coming soon</span></article>
-      <article class="service"><span class="icon" aria-hidden="true">◎</span><h3>Student registration</h3><p>Manage your student profile and enrollment information securely.</p><span class="coming">Coming soon</span></article>
+      <article class="service"><span class="icon" aria-hidden="true">◎</span><h3>Student registration</h3><p>Try the registration workflow using safe demonstration data.</p><a class="coming" href="#registration">Demo available</a></article>
       <article class="service"><span class="icon" aria-hidden="true">☑</span><h3>Service requests</h3><p>Submit questions and keep track of requests from one place.</p><span class="coming">Coming soon</span></article>
       <article class="service"><span class="icon" aria-hidden="true">◈</span><h3>Academic resources</h3><p>Locate relevant student information and helpful resources.</p><span class="coming">Coming soon</span></article>
       <article class="service"><span class="icon" aria-hidden="true">✉</span><h3>Messages & updates</h3><p>Stay informed about the progress of your requests.</p><span class="coming">Coming soon</span></article>
       <article class="service"><span class="icon" aria-hidden="true">◇</span><h3>Support center</h3><p>Find answers and connect with the right support channels.</p><span class="coming">Coming soon</span></article>
     </div></div></section>
+    <section class="registration-section" id="registration">
+      <div class="wrap">
+        <div class="section-top">
+          <span class="kicker">Registration demo</span>
+          <h2>Try the Student Registration workflow</h2>
+          <p>This demonstration sends safe test data through the UTC application and stores it in PostgreSQL.</p>
+        </div>
+
+        <div class="registration-card">
+          <div class="demo-note">
+            Development demo only. Do not enter real student or personal information.
+          </div>
+
+          <form id="registration-form">
+            <div class="registration-grid">
+              <div class="field">
+                <label for="student-number">Student number</label>
+                <input id="student-number" readonly>
+              </div>
+
+              <div class="field">
+                <label for="student-email">Email</label>
+                <input id="student-email" type="email" readonly>
+              </div>
+
+              <div class="field">
+                <label for="first-name">First name</label>
+                <input id="first-name" value="Demo" readonly>
+              </div>
+
+              <div class="field">
+                <label for="last-name">Last name</label>
+                <input id="last-name" value="Student" readonly>
+              </div>
+
+              <div class="field full">
+                <label for="program">Program</label>
+                <select id="program">
+                  <option>Cloud Engineering</option>
+                  <option>Data Analytics</option>
+                  <option>Cybersecurity</option>
+                  <option>Mathematics</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="registration-actions">
+              <button id="register-button" type="submit">Run demo registration</button>
+              <span id="registration-result" class="registration-result" role="status" aria-live="polite"></span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
     <section class="steps-section" id="how-it-works"><div class="wrap"><div class="section-top"><span class="kicker">How it will work</span><h2>Student support, simplified</h2><p>We're building a secure student experience in three easy steps.</p></div><div class="steps"><div class="step"><span class="num">01</span><h3>Sign in securely</h3><p>Use your student account to access your personal dashboard.</p></div><div class="step"><span class="num">02</span><h3>Request a service</h3><p>Submit information and documents through guided forms.</p></div><div class="step"><span class="num">03</span><h3>Track your progress</h3><p>View request status and receive useful updates.</p></div></div></div></section>
     <section class="status-section" id="status"><div class="wrap"><div class="status"><div><h2>Infrastructure is ready. The portal is taking shape.</h2><p>The existing backend has a public health-check endpoint. Student-facing account features are still under development.</p></div><a href="https://utc.triplearides.com/health" target="_blank" rel="noopener noreferrer">Check backend health ↗</a></div></div></section>
   </main>
@@ -57,6 +127,70 @@
     const nav = document.getElementById('navlinks');
     menu.addEventListener('click', () => {const isOpen = nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(isOpen));});
     nav.querySelectorAll('a').forEach(a => a.addEventListener('click',()=>{nav.classList.remove('open');menu.setAttribute('aria-expanded','false');}));
+
+    const registrationForm = document.getElementById('registration-form');
+    const registrationResult = document.getElementById('registration-result');
+    const registerButton = document.getElementById('register-button');
+    const studentNumber = document.getElementById('student-number');
+    const studentEmail = document.getElementById('student-email');
+
+    function generateDemoIdentity() {
+      const stamp = Date.now().toString().slice(-9);
+      const random = Math.floor(Math.random() * 900 + 100);
+      const identifier = stamp + random;
+
+      studentNumber.value = 'TEST-' + identifier;
+      studentEmail.value = 'demo.' + identifier + '@example.com';
+    }
+
+    generateDemoIdentity();
+
+    registrationForm.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      registerButton.disabled = true;
+      registrationResult.textContent = 'Submitting demo registration...';
+      registrationResult.className = 'registration-result';
+
+      const payload = {
+        student_number: studentNumber.value,
+        first_name: 'Demo',
+        last_name: 'Student',
+        email: studentEmail.value,
+        program: document.getElementById('program').value
+      };
+
+      try {
+        const response = await fetch('/students', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Registration failed');
+        }
+
+        registrationResult.textContent =
+          'Success ? demo student registered with status: ' +
+          result.enrollment_status;
+
+        registrationResult.className = 'registration-result success';
+        generateDemoIdentity();
+
+      } catch (error) {
+        registrationResult.textContent =
+          'Registration failed: ' + error.message;
+
+        registrationResult.className = 'registration-result error';
+
+      } finally {
+        registerButton.disabled = false;
+      }
+    });
+
   </script>
 </body>
 </html>

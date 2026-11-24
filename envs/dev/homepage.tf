@@ -9,3 +9,15 @@ resource "aws_s3_object" "homepage" {
   etag         = filemd5("${path.module}/../../frontend/index.html")
   content_type = "text/html"
 }
+
+# UTC Python backend application
+resource "aws_s3_object" "backend_app" {
+  count = var.enable_s3 ? 1 : 0
+
+  bucket       = module.storage.s3_bucket_name
+  key          = "application/app.py"
+  source       = "${path.module}/../../module/compute/app.py"
+  etag         = filemd5("${path.module}/../../module/compute/app.py")
+  content_type = "text/x-python"
+}
+
