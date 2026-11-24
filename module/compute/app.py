@@ -49,6 +49,171 @@ class AppHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
     def do_POST(self):
 
+        # Student registration - internal testing only
+        if self.path == "/students":
+
+            if self.client_address[0] not in ("127.0.0.1", "::1"):
+                self.send_error(404, "Not Found")
+                return
+
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+
+                if length < 1 or length > 16384:
+                    self.send_json(413, {
+                        "error": "Invalid request size"
+                    })
+                    return
+
+                data = json.loads(self.rfile.read(length))
+
+                if not isinstance(data, dict):
+                    self.send_json(400, {
+                        "error": "JSON request must be an object"
+                    })
+                    return
+
+                required_fields = (
+                    "student_number",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "program"
+                )
+
+                values = {}
+
+                for field in required_fields:
+                    value = data.get(field)
+
+                    if not isinstance(value, str) or not value.strip():
+                        self.send_json(400, {
+                            "error": f"Invalid {field}"
+                        })
+                        return
+
+                    values[field] = value.strip()
+
+                if not re.fullmatch(
+                    r"[A-Za-z0-9-]{4,20}",
+                    values["student_number"]
+                ):
+                    self.send_json(400, {
+                        "error": "Invalid student_number"
+                    })
+                    return
+
+                if len(values["first_name"]) > 100:
+                    self.send_json(400, {
+                        "error": "Invalid first_name"
+                    })
+                    return
+
+                if len(values["last_name"]) > 100:
+                    self.send_json(400, {
+                        "error": "Invalid last_name"
+                    })
+                    return
+
+                if (
+                    len(values["email"]) > 255
+                    or not re.fullmatch(
+                        r"[^@\s]+@[^@\s]+\.[^@\s]+",
+                        values["email"]
+                    )
+                ):
+                    self.send_json(400, {
+                        "error": "Invalid email"
+                    })
+                    return
+
+                if len(values["program"]) > 150:
+                    self.send_json(400, {
+                        "error": "Invalid program"
+                    })
+                    return
+
+                secret_arn = os.environ["UTC_DB_SECRET_ARN"]
+
+                client = boto3.client(
+                    "secretsmanager",
+                    region_name="us-east-1"
+                )
+
+                response = client.get_secret_value(
+                    SecretId=secret_arn
+                )
+
+                secret = json.loads(response["SecretString"])
+
+                student_id = str(uuid.uuid4())
+
+                with closing(psycopg2.connect(
+                    host=os.environ["UTC_DB_HOST"],
+                    port=secret.get("port", 5432),
+                    dbname="utcapp",
+                    user=secret["username"],
+                    password=secret["password"],
+                    sslmode="require",
+                    connect_timeout=5
+                )) as connection:
+
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            INSERT INTO students (
+                                id,
+                                student_number,
+                                first_name,
+                                last_name,
+                                email,
+                                program
+                            )
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                            RETURNING
+                                id,
+                                enrollment_status,
+                                created_at
+                        """, (
+                            student_id,
+                            values["student_number"],
+                            values["first_name"],
+                            values["last_name"],
+                            values["email"],
+                            values["program"]
+                        ))
+
+                        result = cursor.fetchone()
+                        connection.commit()
+
+                self.send_json(201, {
+                    "status": "registered",
+                    "student_id": str(result[0]),
+                    "enrollment_status": result[1],
+                    "created_at": result[2].isoformat()
+                })
+
+            except psycopg2.IntegrityError:
+                self.send_json(409, {
+                    "error": "Student number or email already exists"
+                })
+
+            except ValueError:
+                self.send_json(400, {
+                    "error": "Invalid JSON request"
+                })
+
+            except Exception as error:
+                print(
+                    "Student registration failed:",
+                    type(error).__name__,
+                    flush=True
+                )
+                self.send_json(503, {
+                    "error": "Registration unavailable"
+                })
+
+            return
+
         if self.path != "/documents":
             self.send_error(404, "Not Found")
             return

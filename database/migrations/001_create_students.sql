@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS students (
+    id UUID PRIMARY KEY,
+    student_number VARCHAR(20) NOT NULL UNIQUE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    program VARCHAR(150) NOT NULL,
+    enrollment_status VARCHAR(30) NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
