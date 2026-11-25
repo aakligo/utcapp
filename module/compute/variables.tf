@@ -79,3 +79,15 @@ variable "s3_bucket_name" {
   type        = string
   default     = ""
 }
+# AUTH-004: Expected ALB authentication identity
+variable "auth_alb_arn" {
+  description = "ARN of the trusted Application Load Balancer"
+  type        = string
+  default     = ""
+}
+
+variable "auth_client_id" {
+  description = "Cognito app client used by ALB authentication"
+  type        = string
+  default     = ""
+}

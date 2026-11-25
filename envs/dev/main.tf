@@ -86,6 +86,8 @@ module "compute" {
 
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   s3_bucket_name            = var.enable_s3 ? module.storage.s3_bucket_name : ""
+  auth_alb_arn              = module.alb[0].alb_arn
+  auth_client_id            = module.auth.alb_client_id
   # DB-001: RDS PostgreSQL secret
   db_secret_arn = var.enable_rds ? data.aws_secretsmanager_secret.db_app.arn : ""
 
@@ -212,3 +214,4 @@ module "auth" {
   callback_url = "https://utc.triplearides.com/"
   logout_url   = "https://utc.triplearides.com/"
 }
+

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+import base64
 import re
+import time
 from botocore.exceptions import ClientError
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -9,6 +11,67 @@ import os
 
 import boto3
 import psycopg2
+
+
+def decode_jwt_part(part):
+    padding = "=" * (-len(part) % 4)
+    return json.loads(
+        base64.urlsafe_b64decode(part + padding).decode("utf-8")
+    )
+
+
+def get_authenticated_identity(headers):
+    token = headers.get("x-amzn-oidc-data")
+    forwarded_sub = headers.get("x-amzn-oidc-identity")
+
+    if not token or not forwarded_sub:
+        raise ValueError("Authentication identity missing")
+
+    parts = token.split(".")
+
+    if len(parts) != 3:
+        raise ValueError("Invalid authentication token")
+
+    jwt_header = decode_jwt_part(parts[0])
+    claims = decode_jwt_part(parts[1])
+
+    expected_alb = os.environ.get("UTC_AUTH_ALB_ARN", "")
+    expected_client = os.environ.get("UTC_AUTH_CLIENT_ID", "")
+
+    if not expected_alb or not expected_client:
+        raise ValueError("Authentication configuration missing")
+
+    if jwt_header.get("alg") != "ES256":
+        raise ValueError("Unexpected token algorithm")
+
+    if jwt_header.get("signer") != expected_alb:
+        raise ValueError("Unexpected token signer")
+
+    if jwt_header.get("client") != expected_client:
+        raise ValueError("Unexpected authentication client")
+
+    try:
+        expires_at = int(jwt_header.get("exp", 0))
+    except (TypeError, ValueError):
+        raise ValueError("Invalid token expiration")
+
+    if expires_at <= int(time.time()):
+        raise ValueError("Authentication token expired")
+
+    subject = claims.get("sub")
+
+    if not isinstance(subject, str) or not subject:
+        raise ValueError("Authentication subject missing")
+
+    if subject != forwarded_sub:
+        raise ValueError("Authentication subject mismatch")
+
+    email = claims.get("email")
+
+    return {
+        "sub": subject,
+        "email": email if isinstance(email, str) else None
+    }
 
 
 def check_database():
@@ -317,23 +380,29 @@ class AppHandler(BaseHTTPRequestHandler):
 
             return
 
-        # AUTH-003: Authenticated identity forwarded by the ALB
-        # Diagnostic only. Final authorization will verify x-amzn-oidc-data.
+        # AUTH-004: Validate identity metadata forwarded by authenticated ALB.
         if self.path == "/auth/me":
-            subject = self.headers.get("x-amzn-oidc-identity")
-            claims_token = self.headers.get("x-amzn-oidc-data")
+            try:
+                identity = get_authenticated_identity(self.headers)
 
-            if not subject or not claims_token:
+                self.send_json(200, {
+                    "authenticated": True,
+                    "subject": identity["sub"],
+                    "email": identity["email"]
+                })
+
+            except ValueError as error:
+                print(
+                    "Authentication validation failed:",
+                    str(error),
+                    flush=True
+                )
+
                 self.send_json(401, {
                     "authenticated": False,
-                    "error": "Authentication identity missing"
+                    "error": "Invalid authentication identity"
                 })
-                return
 
-            self.send_json(200, {
-                "authenticated": True,
-                "subject": subject
-            })
             return
         # Application health check
         if self.path == "/health":

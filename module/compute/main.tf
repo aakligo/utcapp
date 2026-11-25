@@ -10,6 +10,8 @@ resource "aws_launch_template" "this" {
     db_secret_arn           = var.db_secret_arn
     db_host                 = var.db_host
     s3_bucket_name          = var.s3_bucket_name
+    auth_alb_arn            = var.auth_alb_arn
+    auth_client_id          = var.auth_client_id
   }))
 
   iam_instance_profile {
@@ -99,6 +101,7 @@ resource "aws_autoscaling_group" "this" {
     propagate_at_launch = true
   }
 }
+
 
 
 

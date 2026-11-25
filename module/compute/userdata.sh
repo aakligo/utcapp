@@ -72,6 +72,8 @@ Environment=PYTHONUNBUFFERED=1
 Environment="UTC_DB_SECRET_ARN=${db_secret_arn}"
 Environment="UTC_DB_HOST=${db_host}"
 Environment="UTC_S3_BUCKET=${s3_bucket_name}"
+Environment="UTC_AUTH_ALB_ARN=${auth_alb_arn}"
+Environment="UTC_AUTH_CLIENT_ID=${auth_client_id}"
 StandardOutput=append:/var/log/utc-app.log
 StandardError=append:/var/log/utc-app.log
 Restart=always
@@ -101,3 +103,4 @@ UTC_CW_AGENT
 echo "CloudWatch Agent configured and started."
 
 echo "UTC application server initialization completed."
+
