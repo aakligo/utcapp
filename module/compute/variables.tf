@@ -91,3 +91,10 @@ variable "auth_client_id" {
   type        = string
   default     = ""
 }
+
+
+variable "homepage_etag" {
+  description = "Checksum used to roll EC2 instances when the homepage changes"
+  type        = string
+  default     = ""
+}

@@ -6,6 +6,7 @@ resource "aws_launch_template" "this" {
 
   user_data = base64encode(templatefile("${path.module}/userdata.sh", {
     app_etag                = filemd5("${path.module}/app.py")
+    homepage_etag           = var.homepage_etag
     cloudwatch_agent_config = file("${path.module}/cloudwatch-agent.json")
     db_secret_arn           = var.db_secret_arn
     db_host                 = var.db_host

@@ -112,11 +112,17 @@ class AppHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
     def do_POST(self):
 
-        # Public demo registration.
-        # Real student data is not accepted until authentication is implemented.
+        # AUTH-005: Authenticated student registration.
         if self.path == "/students":
-
             try:
+                identity = get_authenticated_identity(self.headers)
+
+                if not identity["email"]:
+                    self.send_json(400, {
+                        "error": "Authenticated email is required"
+                    })
+                    return
+
                 length = int(self.headers.get("Content-Length", "0"))
 
                 if length < 1 or length > 16384:
@@ -137,7 +143,6 @@ class AppHandler(BaseHTTPRequestHandler):
                     "student_number",
                     "first_name",
                     "last_name",
-                    "email",
                     "program"
                 )
 
@@ -175,49 +180,6 @@ class AppHandler(BaseHTTPRequestHandler):
                     })
                     return
 
-                if (
-                    len(values["email"]) > 255
-                    or not re.fullmatch(
-                        r"[^@\s]+@[^@\s]+\.[^@\s]+",
-                        values["email"]
-                    )
-                ):
-                    self.send_json(400, {
-                        "error": "Invalid email"
-                    })
-                    return
-
-                if len(values["program"]) > 150:
-                    self.send_json(400, {
-                        "error": "Invalid program"
-                    })
-                    return
-
-                # Demo-only safeguards.
-                # Do not accept real student information before authentication exists.
-                values["email"] = values["email"].lower()
-
-                if not values["student_number"].startswith("TEST-"):
-                    self.send_json(400, {
-                        "error": "Demo student numbers must begin with TEST-"
-                    })
-                    return
-
-                if not values["email"].endswith("@example.com"):
-                    self.send_json(400, {
-                        "error": "Demo registrations must use @example.com"
-                    })
-                    return
-
-                if (
-                    values["first_name"].casefold() != "demo"
-                    or values["last_name"].casefold() != "student"
-                ):
-                    self.send_json(400, {
-                        "error": "Demo registration must use Demo Student"
-                    })
-                    return
-
                 allowed_programs = (
                     "Cloud Engineering",
                     "Data Analytics",
@@ -227,7 +189,7 @@ class AppHandler(BaseHTTPRequestHandler):
 
                 if values["program"] not in allowed_programs:
                     self.send_json(400, {
-                        "error": "Invalid demo program"
+                        "error": "Invalid program"
                     })
                     return
 
@@ -243,7 +205,6 @@ class AppHandler(BaseHTTPRequestHandler):
                 )
 
                 secret = json.loads(response["SecretString"])
-
                 student_id = str(uuid.uuid4())
 
                 with closing(psycopg2.connect(
@@ -264,9 +225,10 @@ class AppHandler(BaseHTTPRequestHandler):
                                 first_name,
                                 last_name,
                                 email,
-                                program
+                                program,
+                                cognito_sub
                             )
-                            VALUES (%s, %s, %s, %s, %s, %s)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
                             RETURNING
                                 id,
                                 enrollment_status,
@@ -276,8 +238,9 @@ class AppHandler(BaseHTTPRequestHandler):
                             values["student_number"],
                             values["first_name"],
                             values["last_name"],
-                            values["email"],
-                            values["program"]
+                            identity["email"].lower(),
+                            values["program"],
+                            identity["sub"]
                         ))
 
                         result = cursor.fetchone()
@@ -286,18 +249,19 @@ class AppHandler(BaseHTTPRequestHandler):
                 self.send_json(201, {
                     "status": "registered",
                     "student_id": str(result[0]),
+                    "email": identity["email"],
                     "enrollment_status": result[1],
                     "created_at": result[2].isoformat()
                 })
 
-            except psycopg2.IntegrityError:
-                self.send_json(409, {
-                    "error": "Student number or email already exists"
+            except ValueError:
+                self.send_json(401, {
+                    "error": "Authentication required"
                 })
 
-            except ValueError:
-                self.send_json(400, {
-                    "error": "Invalid JSON request"
+            except psycopg2.IntegrityError:
+                self.send_json(409, {
+                    "error": "Student account already exists"
                 })
 
             except Exception as error:
@@ -404,6 +368,88 @@ class AppHandler(BaseHTTPRequestHandler):
                 })
 
             return
+        # AUTH-005: Return only the authenticated student's profile.
+        if self.path == "/students/me":
+            try:
+                identity = get_authenticated_identity(self.headers)
+
+                secret_arn = os.environ["UTC_DB_SECRET_ARN"]
+
+                client = boto3.client(
+                    "secretsmanager",
+                    region_name="us-east-1"
+                )
+
+                response = client.get_secret_value(
+                    SecretId=secret_arn
+                )
+
+                secret = json.loads(response["SecretString"])
+
+                with closing(psycopg2.connect(
+                    host=os.environ["UTC_DB_HOST"],
+                    port=secret.get("port", 5432),
+                    dbname="utcapp",
+                    user=secret["username"],
+                    password=secret["password"],
+                    sslmode="require",
+                    connect_timeout=5
+                )) as connection:
+
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            SELECT
+                                id,
+                                student_number,
+                                first_name,
+                                last_name,
+                                email,
+                                program,
+                                enrollment_status,
+                                created_at
+                            FROM students
+                            WHERE cognito_sub = %s
+                        """, (
+                            identity["sub"],
+                        ))
+
+                        student = cursor.fetchone()
+
+                if not student:
+                    self.send_json(404, {
+                        "error": "Student profile not found"
+                    })
+                    return
+
+                self.send_json(200, {
+                    "student_id": str(student[0]),
+                    "student_number": student[1],
+                    "first_name": student[2],
+                    "last_name": student[3],
+                    "email": student[4],
+                    "program": student[5],
+                    "enrollment_status": student[6],
+                    "created_at": student[7].isoformat()
+                })
+
+            except ValueError:
+                self.send_json(401, {
+                    "error": "Authentication required"
+                })
+
+            except Exception as error:
+                print(
+                    "Student profile lookup failed:",
+                    type(error).__name__,
+                    flush=True
+                )
+
+                self.send_json(503, {
+                    "error": "Student profile unavailable"
+                })
+
+            return
+
         # Application health check
         if self.path == "/health":
             self.send_json(200, {

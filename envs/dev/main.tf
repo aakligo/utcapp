@@ -86,6 +86,7 @@ module "compute" {
 
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   s3_bucket_name            = var.enable_s3 ? module.storage.s3_bucket_name : ""
+  homepage_etag             = filemd5("${path.module}/../../frontend/index.html")
   auth_alb_arn              = module.alb[0].alb_arn
   auth_client_id            = module.auth.alb_client_id
   # DB-001: RDS PostgreSQL secret

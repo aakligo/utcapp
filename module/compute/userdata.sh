@@ -32,6 +32,7 @@ dnf install -y python3-boto3 python3-psycopg2
 echo "Python database dependencies installed."
 
 # Application artifact checksum: ${app_etag}
+# Homepage artifact checksum: ${homepage_etag}
 # Download UTC backend and homepage from private S3
 python3 - <<'UTC_APPLICATION_FILES'
 import boto3
