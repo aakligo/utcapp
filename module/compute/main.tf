@@ -62,7 +62,18 @@ resource "aws_autoscaling_group" "this" {
 
   launch_template {
     id      = aws_launch_template.this.id
-    version = "$Latest"
+    version = aws_launch_template.this.latest_version
+  }
+
+  instance_refresh {
+    strategy = "Rolling"
+
+    preferences {
+      min_healthy_percentage = 100
+      max_healthy_percentage = 200
+      instance_warmup        = 120
+      skip_matching          = true
+    }
   }
 
   target_group_arns = var.target_group_arns
@@ -88,3 +99,7 @@ resource "aws_autoscaling_group" "this" {
     propagate_at_launch = true
   }
 }
+
+
+
+

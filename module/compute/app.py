@@ -317,6 +317,24 @@ class AppHandler(BaseHTTPRequestHandler):
 
             return
 
+        # AUTH-003: Authenticated identity forwarded by the ALB
+        # Diagnostic only. Final authorization will verify x-amzn-oidc-data.
+        if self.path == "/auth/me":
+            subject = self.headers.get("x-amzn-oidc-identity")
+            claims_token = self.headers.get("x-amzn-oidc-data")
+
+            if not subject or not claims_token:
+                self.send_json(401, {
+                    "authenticated": False,
+                    "error": "Authentication identity missing"
+                })
+                return
+
+            self.send_json(200, {
+                "authenticated": True,
+                "subject": subject
+            })
+            return
         # Application health check
         if self.path == "/health":
             self.send_json(200, {
@@ -422,3 +440,4 @@ if __name__ == "__main__":
     server = ThreadingHTTPServer(("0.0.0.0", 3000), AppHandler)
     print("UTC application listening on port 3000")
     server.serve_forever()
+
