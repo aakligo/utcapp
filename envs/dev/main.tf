@@ -197,3 +197,18 @@ resource "aws_vpc_security_group_egress_rule" "app_to_ssm_endpoints" {
   description = "Allow HTTPS traffic to SSM VPC endpoints"
 
 }
+
+# ==========================================
+# AUTH-001: Amazon Cognito Student Authentication
+# ==========================================
+
+module "auth" {
+  source = "../../module/auth"
+
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
+  callback_url = "https://utc.triplearides.com/"
+  logout_url   = "https://utc.triplearides.com/"
+}

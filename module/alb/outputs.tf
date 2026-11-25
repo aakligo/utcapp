@@ -30,3 +30,7 @@ output "alb_zone_id" {
   description = "Route 53 hosted zone ID of the ALB"
   value       = aws_lb.this.zone_id
 }
+
+output "https_listener_arn" {
+  value = aws_lb_listener.https.arn
+}
