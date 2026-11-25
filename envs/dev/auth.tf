@@ -200,3 +200,40 @@ resource "aws_lb_listener_rule" "students_post" {
     }
   }
 }
+
+# ==========================================
+# SRV-002: Protected service request endpoints
+# ==========================================
+
+resource "aws_lb_listener_rule" "service_requests" {
+  listener_arn = module.alb[0].https_listener_arn
+  priority     = 40
+
+  action {
+    type  = "authenticate-cognito"
+    order = 1
+
+    authenticate_cognito {
+      user_pool_arn       = module.auth.user_pool_arn
+      user_pool_client_id = module.auth.alb_client_id
+      user_pool_domain    = module.auth.domain
+
+      on_unauthenticated_request = "deny"
+      scope                      = "openid email profile"
+      session_cookie_name        = "AWSELBAuthSessionCookie"
+      session_timeout            = 3600
+    }
+  }
+
+  action {
+    type             = "forward"
+    order            = 2
+    target_group_arn = module.alb[0].target_group_arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/requests", "/requests/*"]
+    }
+  }
+}

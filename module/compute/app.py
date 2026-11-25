@@ -276,6 +276,154 @@ class AppHandler(BaseHTTPRequestHandler):
 
             return
 
+        # SRV-002: Create a service request for the authenticated student.
+        if self.path == "/requests":
+            try:
+                identity = get_authenticated_identity(self.headers)
+
+                length = int(self.headers.get("Content-Length", "0"))
+
+                if length < 1 or length > 32768:
+                    self.send_json(413, {
+                        "error": "Invalid request size"
+                    })
+                    return
+
+                data = json.loads(self.rfile.read(length))
+
+                if not isinstance(data, dict):
+                    self.send_json(400, {
+                        "error": "JSON request must be an object"
+                    })
+                    return
+
+                request_type = data.get("request_type")
+                subject = data.get("subject")
+                description = data.get("description")
+
+                allowed_types = (
+                    "Academic Support",
+                    "Registration",
+                    "Documents",
+                    "Technical Support"
+                )
+
+                if request_type not in allowed_types:
+                    self.send_json(400, {
+                        "error": "Invalid request type"
+                    })
+                    return
+
+                if (
+                    not isinstance(subject, str)
+                    or not subject.strip()
+                    or len(subject.strip()) > 150
+                ):
+                    self.send_json(400, {
+                        "error": "Invalid subject"
+                    })
+                    return
+
+                if (
+                    not isinstance(description, str)
+                    or not description.strip()
+                    or len(description.strip()) > 5000
+                ):
+                    self.send_json(400, {
+                        "error": "Invalid description"
+                    })
+                    return
+
+                secret_arn = os.environ["UTC_DB_SECRET_ARN"]
+
+                client = boto3.client(
+                    "secretsmanager",
+                    region_name="us-east-1"
+                )
+
+                secret = json.loads(
+                    client.get_secret_value(
+                        SecretId=secret_arn
+                    )["SecretString"]
+                )
+
+                request_id = str(uuid.uuid4())
+
+                with closing(psycopg2.connect(
+                    host=os.environ["UTC_DB_HOST"],
+                    port=secret.get("port", 5432),
+                    dbname="utcapp",
+                    user=secret["username"],
+                    password=secret["password"],
+                    sslmode="require",
+                    connect_timeout=5
+                )) as connection:
+
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            SELECT id
+                            FROM students
+                            WHERE cognito_sub = %s
+                        """, (
+                            identity["sub"],
+                        ))
+
+                        student = cursor.fetchone()
+
+                        if not student:
+                            self.send_json(404, {
+                                "error": "Student profile not found"
+                            })
+                            return
+
+                        cursor.execute("""
+                            INSERT INTO service_requests (
+                                id,
+                                student_id,
+                                request_type,
+                                subject,
+                                description
+                            )
+                            VALUES (%s, %s, %s, %s, %s)
+                            RETURNING
+                                id,
+                                status,
+                                created_at
+                        """, (
+                            request_id,
+                            student[0],
+                            request_type,
+                            subject.strip(),
+                            description.strip()
+                        ))
+
+                        result = cursor.fetchone()
+                        connection.commit()
+
+                self.send_json(201, {
+                    "request_id": str(result[0]),
+                    "status": result[1],
+                    "created_at": result[2].isoformat()
+                })
+
+            except ValueError:
+                self.send_json(401, {
+                    "error": "Authentication required"
+                })
+
+            except Exception as error:
+                print(
+                    "Service request creation failed:",
+                    type(error).__name__,
+                    flush=True
+                )
+
+                self.send_json(503, {
+                    "error": "Service request unavailable"
+                })
+
+            return
+
         if self.path != "/documents":
             self.send_error(404, "Not Found")
             return
@@ -446,6 +594,105 @@ class AppHandler(BaseHTTPRequestHandler):
 
                 self.send_json(503, {
                     "error": "Student profile unavailable"
+                })
+
+            return
+
+        # SRV-002: Return only this authenticated student's requests.
+        if self.path == "/requests/me":
+            try:
+                identity = get_authenticated_identity(self.headers)
+
+                secret_arn = os.environ["UTC_DB_SECRET_ARN"]
+
+                client = boto3.client(
+                    "secretsmanager",
+                    region_name="us-east-1"
+                )
+
+                secret = json.loads(
+                    client.get_secret_value(
+                        SecretId=secret_arn
+                    )["SecretString"]
+                )
+
+                with closing(psycopg2.connect(
+                    host=os.environ["UTC_DB_HOST"],
+                    port=secret.get("port", 5432),
+                    dbname="utcapp",
+                    user=secret["username"],
+                    password=secret["password"],
+                    sslmode="require",
+                    connect_timeout=5
+                )) as connection:
+
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            SELECT id
+                            FROM students
+                            WHERE cognito_sub = %s
+                        """, (
+                            identity["sub"],
+                        ))
+
+                        student = cursor.fetchone()
+
+                        if not student:
+                            self.send_json(404, {
+                                "error": "Student profile not found"
+                            })
+                            return
+
+                        cursor.execute("""
+                            SELECT
+                                id,
+                                request_type,
+                                subject,
+                                description,
+                                status,
+                                created_at,
+                                updated_at
+                            FROM service_requests
+                            WHERE student_id = %s
+                            ORDER BY created_at DESC
+                            LIMIT 50
+                        """, (
+                            student[0],
+                        ))
+
+                        rows = cursor.fetchall()
+
+                requests = []
+
+                for row in rows:
+                    requests.append({
+                        "request_id": str(row[0]),
+                        "request_type": row[1],
+                        "subject": row[2],
+                        "description": row[3],
+                        "status": row[4],
+                        "created_at": row[5].isoformat(),
+                        "updated_at": row[6].isoformat()
+                    })
+
+                self.send_json(200, {
+                    "requests": requests
+                })
+
+            except ValueError:
+                self.send_json(401, {
+                    "error": "Authentication required"
+                })
+
+            except Exception as error:
+                print(
+                    "Service request lookup failed:",
+                    type(error).__name__,
+                    flush=True
+                )
+
+                self.send_json(503, {
+                    "error": "Service requests unavailable"
                 })
 
             return
