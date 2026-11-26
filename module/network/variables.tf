@@ -12,8 +12,17 @@ variable "environment" {
 }
 
 variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
+  description = "IPv4 /16 CIDR block for the VPC"
   type        = string
+
+  validation {
+    condition = (
+      can(cidrnetmask(var.vpc_cidr)) &&
+      endswith(var.vpc_cidr, "/16")
+    )
+
+    error_message = "The VPC CIDR must be a valid IPv4 /16 CIDR block."
+  }
 }
 
 variable "az_count" {
