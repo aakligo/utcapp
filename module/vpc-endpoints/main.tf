@@ -48,7 +48,7 @@ locals {
 }
 
 resource "aws_vpc_endpoint" "ssm" {
-  for_each = local.ssm_services
+  for_each = var.enable_ssm_endpoints ? local.ssm_services : toset([])
 
   vpc_id              = var.vpc_id
   service_name        = "com.amazonaws.${var.aws_region}.${each.value}"

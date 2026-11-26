@@ -32,3 +32,8 @@ variable "autoscaling_group_name" {
   type        = string
   default     = ""
 }
+variable "enable_cloudwatch" {
+  description = "Enable CloudWatch log group and CPU alarm"
+  type        = bool
+  default     = true
+}

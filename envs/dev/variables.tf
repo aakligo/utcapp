@@ -48,3 +48,32 @@ variable "enable_efs" {
   type        = bool
   default     = false
 }
+variable "desired_capacity" {
+  description = "Desired number of application EC2 instances"
+  type        = number
+  default     = 0
+}
+
+variable "enable_ssm_endpoints" {
+  description = "Enable Systems Manager interface endpoints"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cloudwatch_logs_endpoint" {
+  description = "Enable CloudWatch Logs interface endpoint"
+  type        = bool
+  default     = false
+}
+
+variable "enable_secretsmanager_endpoint" {
+  description = "Enable Secrets Manager interface endpoint"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cloudwatch" {
+  description = "Enable CloudWatch monitoring resources"
+  type        = bool
+  default     = false
+}

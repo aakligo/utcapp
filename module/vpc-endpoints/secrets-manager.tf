@@ -15,9 +15,7 @@ resource "aws_vpc_endpoint" "secretsmanager" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
-  subnet_ids = tolist(
-    aws_vpc_endpoint.ssm["ssm"].subnet_ids
-  )
+  subnet_ids = var.private_subnet_ids
 
   security_group_ids = [
     aws_security_group.endpoints.id
