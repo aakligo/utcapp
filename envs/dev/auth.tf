@@ -3,6 +3,7 @@
 # ==========================================
 
 resource "aws_lb_listener_rule" "auth_test" {
+  count        = var.enable_alb ? 1 : 0
   listener_arn = module.alb[0].https_listener_arn
   priority     = 10
 
@@ -45,6 +46,7 @@ resource "aws_lb_listener_rule" "auth_test" {
 # ==========================================
 
 resource "aws_lb_listener_rule" "auth_me" {
+  count        = var.enable_alb ? 1 : 0
   listener_arn = module.alb[0].https_listener_arn
   priority     = 20
 
@@ -82,6 +84,7 @@ resource "aws_lb_listener_rule" "auth_me" {
 # ==========================================
 
 resource "aws_lb_listener_rule" "students" {
+  count        = var.enable_alb ? 1 : 0
   listener_arn = module.alb[0].https_listener_arn
   priority     = 30
 
@@ -119,6 +122,7 @@ resource "aws_lb_listener_rule" "students" {
 # ==========================================
 
 resource "aws_lb_listener_rule" "login" {
+  count        = var.enable_alb ? 1 : 0
   listener_arn = module.alb[0].https_listener_arn
   priority     = 5
 
@@ -163,6 +167,7 @@ resource "aws_lb_listener_rule" "login" {
 # ==========================================
 
 resource "aws_lb_listener_rule" "students_post" {
+  count        = var.enable_alb ? 1 : 0
   listener_arn = module.alb[0].https_listener_arn
   priority     = 25
 
@@ -206,6 +211,7 @@ resource "aws_lb_listener_rule" "students_post" {
 # ==========================================
 
 resource "aws_lb_listener_rule" "service_requests" {
+  count        = var.enable_alb ? 1 : 0
   listener_arn = module.alb[0].https_listener_arn
   priority     = 40
 

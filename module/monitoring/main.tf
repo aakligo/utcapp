@@ -2,7 +2,7 @@
 # OBS-001: CloudWatch Logs and SNS
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "application" {
-  count = var.enable_monitoring ? 1 : 0
+  count = var.enable_monitoring && var.enable_cloudwatch ? 1 : 0
 
   name              = "/${var.project_name}/${var.environment}/application"
   retention_in_days = var.log_retention_days
@@ -36,7 +36,7 @@ resource "aws_sns_topic_subscription" "email" {
 }
 # OBS-001: EC2 High CPU Alarm
 resource "aws_cloudwatch_metric_alarm" "high_cpu" {
-  count = var.enable_monitoring && trimspace(var.autoscaling_group_name) != "" ? 1 : 0
+  count = var.enable_monitoring && var.enable_cloudwatch && trimspace(var.autoscaling_group_name) != "" ? 1 : 0
 
   alarm_name        = "${var.project_name}-${var.environment}-high-cpu"
   alarm_description = "Alert when average EC2 CPU utilization exceeds the threshold"

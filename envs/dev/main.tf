@@ -87,14 +87,14 @@ module "compute" {
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   s3_bucket_name            = var.enable_s3 ? module.storage.s3_bucket_name : ""
   homepage_etag             = filemd5("${path.module}/../../frontend/index.html")
-  auth_alb_arn              = module.alb[0].alb_arn
+  auth_alb_arn              = var.enable_alb ? module.alb[0].alb_arn : ""
   auth_client_id            = module.auth.alb_client_id
   # DB-001: RDS PostgreSQL secret
-  db_secret_arn = var.enable_rds ? data.aws_secretsmanager_secret.db_app.arn : ""
+  db_secret_arn = var.enable_rds ? data.aws_secretsmanager_secret.db_app[0].arn : ""
 
   db_host          = var.enable_rds ? split(":", module.database[0].db_endpoint)[0] : ""
   min_size         = 0
-  desired_capacity = 1
+  desired_capacity = var.desired_capacity
   max_size         = 3
 
 
@@ -149,7 +149,7 @@ module "secrets" {
   ec2_role_name = module.iam.ec2_role_name
 
   # SEC-002: Approved application database secret
-  approved_secret_arns = var.enable_rds ? [data.aws_secretsmanager_secret.db_app.arn] : []
+  approved_secret_arns = var.enable_rds ? [data.aws_secretsmanager_secret.db_app[0].arn] : []
 }
 # OBS-001: CloudWatch Monitoring and SNS
 module "monitoring" {
@@ -160,6 +160,7 @@ module "monitoring" {
 
   # Keep monitoring disabled until deployment approval
   enable_monitoring = true
+  enable_cloudwatch = var.enable_cloudwatch
 
   # Reuse the existing EC2 Auto Scaling Group
   autoscaling_group_name = module.compute.autoscaling_group_name
@@ -176,8 +177,9 @@ module "vpc_endpoints" {
   environment  = var.environment
   aws_region   = var.aws_region
 
-  enable_cloudwatch_logs_endpoint = true
-  enable_secretsmanager_endpoint  = true
+  enable_cloudwatch_logs_endpoint = var.enable_cloudwatch_logs_endpoint
+  enable_ssm_endpoints            = var.enable_ssm_endpoints
+  enable_secretsmanager_endpoint  = var.enable_secretsmanager_endpoint
   vpc_id                          = module.network.vpc_id
 
   private_subnet_ids = [

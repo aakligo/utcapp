@@ -36,3 +36,9 @@ variable "app_route_table_id" {
   description = "Existing private application route table ID for the S3 Gateway endpoint"
   type        = string
 }
+
+variable "enable_ssm_endpoints" {
+  description = "Enable Systems Manager interface VPC endpoints"
+  type        = bool
+  default     = false
+}
