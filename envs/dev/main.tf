@@ -25,7 +25,7 @@ module "alb" {
   source = "../../module/alb"
 
 
-  count = var.enable_alb ? 1 : 0
+  count = local.effective_enable_alb ? 1 : 0
 
   project_name = var.project_name
   environment  = var.environment
@@ -48,7 +48,7 @@ module "acm" {
 
 }
 resource "aws_route53_record" "utc_app" {
-  count   = var.enable_alb ? 1 : 0
+  count   = local.effective_enable_alb ? 1 : 0
   zone_id = "Z004138513LCBZH23PN39"
   name    = "utc.triplearides.com"
   type    = "A"
@@ -87,18 +87,18 @@ module "compute" {
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   s3_bucket_name            = var.enable_s3 ? module.storage.s3_bucket_name : ""
   homepage_etag             = filemd5("${path.module}/../../frontend/index.html")
-  auth_alb_arn              = var.enable_alb ? module.alb[0].alb_arn : ""
+  auth_alb_arn              = local.effective_enable_alb ? module.alb[0].alb_arn : ""
   auth_client_id            = module.auth.alb_client_id
   # DB-001: RDS PostgreSQL secret
-  db_secret_arn = var.enable_rds ? data.aws_secretsmanager_secret.db_app[0].arn : ""
+  db_secret_arn = local.effective_enable_rds ? data.aws_secretsmanager_secret.db_app[0].arn : ""
 
-  db_host          = var.enable_rds ? split(":", module.database[0].db_endpoint)[0] : ""
+  db_host          = local.effective_enable_rds ? split(":", module.database[0].db_endpoint)[0] : ""
   min_size         = 0
-  desired_capacity = var.desired_capacity
+  desired_capacity = local.effective_desired_capacity
   max_size         = 3
 
 
-  target_group_arns = var.enable_alb ? [module.alb[0].target_group_arn] : []
+  target_group_arns = local.effective_enable_alb ? [module.alb[0].target_group_arn] : []
 }
 
 # ==========================================
@@ -106,7 +106,7 @@ module "compute" {
 # ==========================================
 
 module "database" {
-  count  = var.enable_rds ? 1 : 0
+  count  = local.effective_enable_rds ? 1 : 0
   source = "../../module/database"
 
   project_name = var.project_name
@@ -149,7 +149,7 @@ module "secrets" {
   ec2_role_name = module.iam.ec2_role_name
 
   # SEC-002: Approved application database secret
-  approved_secret_arns = var.enable_rds ? [data.aws_secretsmanager_secret.db_app[0].arn] : []
+  approved_secret_arns = local.effective_enable_rds ? [data.aws_secretsmanager_secret.db_app[0].arn] : []
 }
 # OBS-001: CloudWatch Monitoring and SNS
 module "monitoring" {
@@ -177,9 +177,9 @@ module "vpc_endpoints" {
   environment  = var.environment
   aws_region   = var.aws_region
 
-  enable_cloudwatch_logs_endpoint = var.enable_cloudwatch_logs_endpoint
-  enable_ssm_endpoints            = var.enable_ssm_endpoints
-  enable_secretsmanager_endpoint  = var.enable_secretsmanager_endpoint
+  enable_cloudwatch_logs_endpoint = local.effective_enable_cloudwatch_logs_endpoint
+  enable_ssm_endpoints            = local.effective_enable_ssm_endpoints
+  enable_secretsmanager_endpoint  = local.effective_enable_secretsmanager_endpoint
   vpc_id                          = module.network.vpc_id
 
   private_subnet_ids = [

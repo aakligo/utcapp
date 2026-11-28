@@ -3,7 +3,7 @@
 # Only retrieve the secret when RDS is enabled.
 
 data "aws_secretsmanager_secret" "db_app" {
-  count = var.enable_rds ? 1 : 0
+  count = local.effective_enable_rds ? 1 : 0
 
   name = "utc-app-dev-db-app-credentials"
 }
