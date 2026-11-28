@@ -77,3 +77,9 @@ variable "enable_cloudwatch" {
   type        = bool
   default     = false
 }
+
+variable "pause_environment" {
+  description = "Pause cost-generating DEV resources while preserving the core network"
+  type        = bool
+  default     = false
+}
